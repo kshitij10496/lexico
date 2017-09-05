@@ -1,7 +1,7 @@
 import click
 
 from .errors import ConfigFileError
-from .utils import fetch_word_meanings, save_api_key, load_api_key
+from .utils import fetch_word_meanings, save_api_key, load_api_key, save_word, get_words
 
 '''
 Supported Commands
@@ -26,10 +26,16 @@ def new(word):
     else:
         data = fetch_word_meanings(word, API_KEY)
         click.echo_via_pager('Data for the word: {}'.format(data))
+        word_save_status = save_word(word)
+        if word_save_status:
+            click.echo('{} has been added to your personal dictionary.'.format(word))
+        else:
+            click.echo('{} could not be added to your dictionary'.format(word))
 
 @dictionary.command()
 def list():
-    click.echo_via_pager('List of words')
+    words = get_words()
+    click.echo_via_pager(words)
 
 @dictionary.command()
 def register():
