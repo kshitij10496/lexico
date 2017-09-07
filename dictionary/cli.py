@@ -1,7 +1,7 @@
 import click
 
 from .errors import ConfigFileError
-from .utils import fetch_word_meanings, save_api_key, load_api_key, save_word, get_words, check_initialization
+from .utils import fetch_word, save_api_key, load_api_key, save_word, get_words, check_initialization
 
 '''
 Supported Commands
@@ -34,8 +34,8 @@ def handle_word(word):
     except ConfigFileError:
         click.echo('API key is missing. Kindly provide an API key by registering via:\t dictionary register')
     else:
-        data = fetch_word_meanings(word, API_KEY)
-        click.echo_via_pager('Data for the word: {}'.format(data))
+        word_object = fetch_word(word)
+        click.echo_via_pager(word_object.stringify())
         word_save_status = save_word(word)
         if word_save_status:
             click.echo('{} has been added to your personal dictionary.'.format(word))

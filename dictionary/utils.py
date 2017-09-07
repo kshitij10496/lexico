@@ -14,14 +14,11 @@ def create_word_api(API_KEY):
     wordApi = WordApi.WordApi(client)
     return wordApi
 
-def fetch_word_meanings(word, API_KEY):
-    #client = swagger.ApiClient(API_KEY, API_URL)
-    #wordApi = WordApi.WordApi(client)
-    wordApi = create_word_api(API_KEY)
-    definitions = wordApi.getDefinitions(word, limit=5)
-    data = [definition.text for definition in definitions]
-    return data
+def fetch_word(word):
+    from .word import Word
 
+    return Word(word)
+    
 
 HOME_DIR = os.path.expanduser('~') # User's Home Directory
  # Base Directory to store all data related to Dictionary App
