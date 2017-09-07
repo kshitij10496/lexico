@@ -9,9 +9,15 @@ from .errors import ConfigFileError
 
 API_URL = 'http://api.wordnik.com/v4'
 
-def fetch_word_meanings(word, API_KEY):
+def create_word_api(API_KEY):
     client = swagger.ApiClient(API_KEY, API_URL)
     wordApi = WordApi.WordApi(client)
+    return wordApi
+
+def fetch_word_meanings(word, API_KEY):
+    #client = swagger.ApiClient(API_KEY, API_URL)
+    #wordApi = WordApi.WordApi(client)
+    wordApi = create_word_api(API_KEY)
     definitions = wordApi.getDefinitions(word, limit=5)
     data = [definition.text for definition in definitions]
     return data
@@ -24,7 +30,8 @@ CONFIG_FILE = os.path.join(BASE_DIR, 'config.json')
 WORDS_FILE = os.path.join(BASE_DIR, 'words.json')
 
 def save_api_key(api_key):
-    if not os.path.exists(BASE_DIR):
+    is_initialized = check_initialization()
+    if not is_initialized:
         os.mkdir(BASE_DIR)
 
     if not os.path.isfile(CONFIG_FILE):
@@ -96,3 +103,14 @@ def get_words():
 
         data = json.loads(encoded_data)
         return tabulate(data, headers='keys')
+
+def check_initialization():
+    '''Checks whether the application has been initilialized for the user or not.
+
+    Returns True if the application folder exists, else False.
+
+    '''
+    if os.path.exists(BASE_DIR):
+        return True
+
+    return False
