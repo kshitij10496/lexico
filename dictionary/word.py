@@ -169,6 +169,6 @@ def create_entry(heading, data, separator):
     else:
         complete_data = data
 
-    print('Printing:', heading)
-    print('DATA:', data)
+    #print('Printing:', heading)
+    #print('DATA:', data)
     return click.style(complete_heading, fg=HEADING_COLOR, underline=True, bold=True) + separator + complete_data

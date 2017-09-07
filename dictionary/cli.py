@@ -12,23 +12,38 @@ register - Prompt user to provide Wordnik API key
 remove - Remove a word from the lookup table
 
 '''
-@click.group(invoke_without_command=True)
-@click.argument('word', type=str)
-@click.pass_context
-def dictionary(ctx, word):
-    click.echo('We are now using "dictionary".')
-    click.echo('Word passed: {}'.format(word))
-    click.echo('Handling word')
-    handle_word(word)
-    click.echo('Handled word')
 
-@dictionary.command()
-@click.argument('word', type=str)
-def new(word):
-    handle_word(word)
+@click.command()
+@click.option('--init', type=bool, default=False)
+@click.option('--view', type=bool, default=False)
+@click.argument('word', required=False)
+def dictionary(init, view, word):
+    #print('View:', view)
+    #print('Word:', word)
+    if word is not None:
+        handle_word(word)
+    elif view:
+        handle_view()
+    elif init:
+        handle_init()
+
+#@click.group(invoke_without_command=True)
+#@click.argument('word', type=str)
+#@click.pass_context
+#def dictionary(ctx, word):
+    #click.echo('We are now using "dictionary".')
+    #click.echo('Word passed: {}'.format(word))
+    #click.echo('Handling word')
+    #handle_word(word)
+    #click.echo('Handled word')
+#
+#@dictionary.command()
+#@click.argument('word', type=str)
+#def new(word):
+    #handle_word(word)
     
 def handle_word(word):
-    click.echo('Word received by new(): {}'.format(word))
+    #click.echo('Word received by new(): {}'.format(word))
     try:
         API_KEY = load_api_key()
     except ConfigFileError:
@@ -42,13 +57,12 @@ def handle_word(word):
         else:
             click.echo('{} could not be added to your dictionary'.format(word))
 
-@dictionary.command()
-def list():
+#@dictionary.command()
+def handle_view():
     words = get_words()
     click.echo_via_pager(words)
 
-@dictionary.command()
-def init():
+def handle_init():
 
     # TODO: Check if the folder is already created.
     is_initialized = check_initialization()
