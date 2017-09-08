@@ -12,6 +12,8 @@ class Word(object):
         self._audio = None
         self._text_pronunciations = None
         self._phrases = None
+        self._synonyms = None
+        self._antonyms = None
 
     def __repr__(self):
         return 'Word({})'.format(self.word)
@@ -58,6 +60,20 @@ class Word(object):
 
         return self._phrases
 
+    @property
+    def synonyms(self):
+        if self._synonyms is None:
+            self._synonyms = Word.get_synonyms(self.word)
+
+        return self._synonyms
+
+    @property
+    def antonyms(self):
+        if self._antonyms is None:
+            self._antonyms = Word.get_antonyms(self.word)
+
+        return self._antonyms
+
     @staticmethod
     def get_meanings(word):
         API_KEY = load_api_key()
@@ -70,7 +86,7 @@ class Word(object):
     def get_examples(word):
         API_KEY = load_api_key()
         WORD_API = create_word_api(API_KEY)
-        examples = WORD_API.getExamples(word, limit=5)
+        examples = WORD_API.getExamples(word, limit=3)
         return [example.text for example in examples.examples]
 
     @staticmethod
@@ -112,7 +128,36 @@ class Word(object):
         else:
             return phrases
 
+    @staticmethod
+    def get_synonyms(word):
+        API_KEY = load_api_key()
+        WORD_API = create_word_api(API_KEY)
+        synonyms = WORD_API.getRelatedWords(word, relationshipTypes='synonym')
+        if synonyms is not None:
+            synonym_words = []
+            for synonym in synonyms:
+                if synonym.relationshipType == 'synonym':
+                    synonym_words.extend(synonym.words)
+               
+            return synonym_words
 
+        return None
+
+    @staticmethod
+    def get_antonyms(word):
+        API_KEY = load_api_key()
+        WORD_API = create_word_api(API_KEY)
+        antonyms = WORD_API.getRelatedWords(word, relationshipTypes='antonym')
+        if antonyms is not None:
+            antonym_words = []
+            for antonym in antonyms:
+                if antonym.relationshipType == 'antonym':
+                    antonym_words.extend(antonym.words)
+
+            return antonym_words
+
+        return None
+        
     def stringify(self):
 
         # Representation for meanings
@@ -125,7 +170,7 @@ class Word(object):
         for index, example in enumerate(self.examples, start=1):
             examples.append(click.style('{}. {}'.format(index, example), fg='cyan'))
         
-        hyphenation, audio, phrases = None, None, None
+        hyphenation, audio, phrases, text_pronunciations = None, None, None, None
         
         if self.hyphenation is not None:
             hyphenation = click.style(self.hyphenation, fg='green')
@@ -134,21 +179,30 @@ class Word(object):
             audio = click.style(self.audio, bg='black')
 
         # Representation for text pronunciations
-        text_pronunciations = list()
-        for index, pronunciation in enumerate(self.text_pronunciations, start=1):
-            text_pronunciations.append(click.style('{}. {}'.format(index, pronunciation), fg='yellow'))
+        if self.text_pronunciations is not None:
+            text_pronunciations = list()
+            for index, pronunciation in enumerate(self.text_pronunciations, start=1):
+                text_pronunciations.append(click.style('{}. {}'.format(index, pronunciation), fg='yellow'))
 
         # Representation for phrases
         if self.phrases is not None:
             phrases = list()
             for index, phrase in enumerate(self.phrases, start=1):
                 phrases.append(click.style('{}. {}'.format(index, phrase), fg='magenta'))
-        # TODO: Filter items which hold data
         
-        
+        # Representation for synonyms
+        synonyms, antonyms = None, None
+        if self.synonyms is not None:
+            synonyms = click.style(', '.join(self.synonyms), fg='green')
+
+        if self.antonyms is not None:
+            antonyms = click.style(', '.join(self.antonyms), fg='red')
+
         headings = [
                     ('Word', click.style(self.word, fg='red', bold=True), '\t'),
                     ('Meanings', meanings, '\n'), 
+                    ('Synonyms', synonyms, ' '),
+                    ('Antonyms', antonyms, ' '),
                     ('Examples', examples, '\n'), 
                     ('Text Pronunciations', text_pronunciations, '\n'),
                     ('Phrases', phrases, '\n'),
