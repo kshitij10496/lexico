@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
 setup(
-    name = 'dictionary',
-    version = '0.0.1',
+    name = 'familiarize',
+    version = '0.1.0',
     packages = find_packages(),
     include_package_data = True,
     install_requires = [
@@ -10,6 +10,6 @@ setup(
     ],
     entry_points = '''
         [console_scripts]
-        dictionary=dictionary.cli:dictionary
+        familiarize=familiarize.cli:familiarize
     '''
 )

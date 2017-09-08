@@ -17,7 +17,7 @@ remove - Remove a word from the lookup table
 @click.option('--init', is_flag=True, default=False)
 @click.option('--view', is_flag=True, default=False)
 @click.argument('word', required=False)
-def dictionary(init, view, word):
+def familiarize(init, view, word):
     #print('View:', view)
     #print('Word:', word)
     if word is not None:
@@ -46,8 +46,9 @@ def handle_word(word):
     #click.echo('Word received by new(): {}'.format(word))
     try:
         API_KEY = load_api_key()
+        #print('API_KEY:', API_KEY)
     except ConfigFileError:
-        click.echo('API key is missing. Kindly provide an API key by registering via:\t dictionary register')
+        click.echo('API key is missing. Kindly provide an API key by registering via:\n\n$ familiarize --init')
     else:
         word_object = fetch_word(word)
         click.echo_via_pager(word_object.stringify())
@@ -69,13 +70,13 @@ def handle_init():
 
     if is_initialized:
         click.echo('Your dictionary has already been initialised.\n' \
-                   'In order to learn how to use the application, use:\n\n$ dictionary --help')
+                   'In order to learn how to use the application, use:\n\n$ familiarize --help')
 
     else:
         # TODO: Move the instructions for registration to README and link them here.
         click.echo('This application is powered by the Wordnik API.' \
-            ' In order to fetch information, you will need to provide an API key to this service.\n' \
-            'Learn how to get your API key here: {}'.format(LINK_README))
+            ' In order to fetch information, you will need to provide an API key to this service.\n')
+
         api_key = click.prompt('Enter your Wordnik API key').strip()
 
         save_status = save_api_key(api_key)
