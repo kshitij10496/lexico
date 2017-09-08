@@ -14,8 +14,8 @@ remove - Remove a word from the lookup table
 '''
 
 @click.command()
-@click.option('--init', type=bool, default=False)
-@click.option('--view', type=bool, default=False)
+@click.option('--init', is_flag=True, default=False)
+@click.option('--view', is_flag=True, default=False)
 @click.argument('word', required=False)
 def dictionary(init, view, word):
     #print('View:', view)
