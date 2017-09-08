@@ -1,0 +1,3 @@
+click==6.7
+tabulate==0.7.7
+wordnik-py3==2.1.2
