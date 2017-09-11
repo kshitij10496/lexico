@@ -1,7 +1,7 @@
 import click
 
 from .errors import ConfigFileError
-from .utils import fetch_word, save_api_key, load_api_key, save_word, get_words, check_initialization
+from .utils import fetch_word, save_api_key, load_api_key, save_word, get_words, check_initialization, tabulate_words
 
 '''
 Supported Commands
@@ -61,7 +61,8 @@ def handle_word(word):
 #@dictionary.command()
 def handle_view():
     words = get_words()
-    click.echo_via_pager(words)
+    display_words = tabulate_words(words)
+    click.echo_via_pager(display_words)
 
 def handle_init():
 

@@ -1,3 +1,4 @@
+from collections import namedtuple
 from dateutil.parser import parse
 import os
 import json
@@ -9,6 +10,8 @@ from tabulate import tabulate
 from .errors import ConfigFileError
 
 API_URL = 'http://api.wordnik.com/v4'
+
+WordData = namedtuple('WordData', ['word', 'created_at'])
 
 def create_word_api(API_KEY):
     client = swagger.ApiClient(API_KEY, API_URL)
@@ -66,10 +69,7 @@ def load_api_key():
         raise ConfigFileError('The configuration file does not exists.')
 
 def save_word(word):
-    word_data = {
-                    'word': word,
-                    'created_at': str(arrow.now())
-                }
+    word_data = WordData(word, arrow.now().for_json())
 
     if not os.path.isfile(WORDS_FILE):
         data = [word_data]
@@ -100,13 +100,12 @@ def get_words():
             encoded_data = file.read()
 
         data = json.loads(encoded_data)
-        for word_data in data:
-            for key, value in word_data.items():
-                if key == 'created_at':
-                    formatted_value = arrow.Arrow.fromdatetime(parse(value)).humanize()
-                    word_data[key] = formatted_value
+        formatted_data = [(word_data[0], arrow.Arrow.fromdatetime(parse(word_data[1])).humanize()) for word_data in data]
 
-        return tabulate(data, headers='keys')
+        return formatted_data
+
+def tabulate_words(formatted_data):
+        return tabulate(formatted_data, headers=['Word', 'Created'])
 
 def check_initialization():
     '''Checks whether the application has been initilialized for the user or not.
