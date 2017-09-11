@@ -1,7 +1,8 @@
-from datetime import datetime
+from dateutil.parser import parse
 import os
 import json
 
+import arrow
 from wordnik import *
 from tabulate import tabulate
 
@@ -67,7 +68,7 @@ def load_api_key():
 def save_word(word):
     word_data = {
                     'word': word,
-                    'created_at': str(datetime.utcnow())
+                    'created_at': str(arrow.now())
                 }
 
     if not os.path.isfile(WORDS_FILE):
@@ -99,6 +100,12 @@ def get_words():
             encoded_data = file.read()
 
         data = json.loads(encoded_data)
+        for word_data in data:
+            for key, value in word_data.items():
+                if key == 'created_at':
+                    formatted_value = arrow.Arrow.fromdatetime(parse(value)).humanize()
+                    word_data[key] = formatted_value
+
         return tabulate(data, headers='keys')
 
 def check_initialization():
