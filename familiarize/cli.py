@@ -52,7 +52,7 @@ def handle_word(word):
     else:
         word_object = fetch_word(word)
         click.echo_via_pager(word_object.stringify())
-        word_save_status = save_word(word)
+        word_save_status = save_word(word_object)
         if word_save_status:
             click.echo('{} has been added to your personal dictionary.'.format(word))
         else:

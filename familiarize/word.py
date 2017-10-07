@@ -1,19 +1,21 @@
+import json
+
 import click
 from wordnik import *
 
 from .utils import create_word_api, load_api_key
 
 class Word(object):
-    def __init__(self, word):
-        self.word = word
-        self._meanings = None
-        self._examples = None
-        self._hyphenation = None
-        self._audio = None
-        self._text_pronunciations = None
-        self._phrases = None
-        self._synonyms = None
-        self._antonyms = None
+    def __init__(self, **kwargs):
+        self.word = kwargs.get('word')
+        self._meanings = kwargs.get('_meanings')
+        self._examples = kwargs.get('_examples')
+        self._hyphenation = kwargs.get('_hyphenation')
+        self._audio = kwargs.get('_audio')
+        self._text_pronunciations = kwargs.get('_text_pronunciations')
+        self._phrases = kwargs.get('_phrases')
+        self._synonyms = kwargs.get('_synonyms')
+        self._antonyms = kwargs.get('_antonyms')
 
     def __repr__(self):
         return 'Word({})'.format(self.word)
@@ -213,6 +215,10 @@ class Word(object):
         s = [create_entry(heading, data, separator) for heading, data, separator in headings if data is not None]
 
         return '\n\n'.join(s)
+
+    def jsonify(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
+
 
 def create_entry(heading, data, separator):
     HEADING_COLOR = 'blue'

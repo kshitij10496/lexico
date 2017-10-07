@@ -18,17 +18,13 @@ def create_word_api(API_KEY):
     wordApi = WordApi.WordApi(client)
     return wordApi
 
-def fetch_word(word):
-    from .word import Word
-
-    return Word(word)
-    
 
 HOME_DIR = os.path.expanduser('~') # User's Home Directory
  # Base Directory to store all data related to Dictionary App
 BASE_DIR = os.path.join(HOME_DIR, '.dictionary')
 CONFIG_FILE = os.path.join(BASE_DIR, 'config.json')
 WORDS_FILE = os.path.join(BASE_DIR, 'words.json')
+DB_FILE = os.path.join(BASE_DIR, 'data.json')
 
 def save_api_key(api_key):
     is_initialized = check_initialization()
@@ -68,7 +64,60 @@ def load_api_key():
     else:
         raise ConfigFileError('The configuration file does not exists.')
 
-def save_word(word):
+def fetch_word(word):
+    from .word import Word
+
+    if os.path.isfile(WORDS_FILE):
+        with open(WORDS_FILE, 'r') as file:
+            encoded_data = file.read()
+
+        data = json.loads(encoded_data)
+            
+        for datapoint in data:
+            if word in datapoint:
+                word_data = lookup_word(word)
+                if word_data is not None:
+                    return Word(**word_data)
+                break
+
+        
+    word_data = {'word': word}
+    return Word(**word_data)
+
+def lookup_word(word):
+    if not os.path.isfile(DB_FILE):
+        return None
+    else:
+        with open(DB_FILE, 'r') as file:
+            encoded_data = file.read()
+
+        data = json.loads(encoded_data)
+
+        for d in data:
+            word_data = json.loads(d)
+            if word_data['word'] == word:
+                return word_data
+
+
+def save_word(word_object):
+    # Save the word data to the database
+    encoded_data = [word_object.jsonify()]
+    if not os.path.isfile(DB_FILE):
+        with open(DB_FILE, 'w') as file:
+            file.write(json.dumps(encoded_data))
+    else:
+        with open(DB_FILE, 'r') as file:
+            data = file.read()
+
+        json_data = json.loads(data)
+        json_data.extend(encoded_data)
+
+        encoded_data = json.dumps(json_data)
+        with open(DB_FILE, 'w') as file:
+            file.write(encoded_data)
+
+    # Add word to lookup table
+    word = word_object.word
     word_data = WordData(word, arrow.now().for_json())
 
     if not os.path.isfile(WORDS_FILE):
