@@ -3,37 +3,33 @@ import click
 from .errors import ConfigFileError
 from .utils import fetch_word, save_api_key, load_api_key, save_word, get_words, check_initialization, tabulate_words
 
-'''
-Supported Commands
-==================
-new - Find data about a new word
-list - List all the words ever looked up
-register - Prompt user to provide Wordnik API key
-remove - Remove a word from the lookup table
 
-'''
 @click.group()
 def lexicon():
+    '''Your personal lexicon to help you expand your English vocabulary.'''
+    #TODO: Add option for debugging.
     pass
 
 @lexicon.command()
-@click.argument('word')
+@click.option('--word', prompt='Your word', help='The word of interest.')
 def new(word):
+    '''Finds the dictionary data about a word.'''
     if word:
         handle_word(word)
     #TODO: raise error
 
 @lexicon.command()
 def init():
+    '''Helps you get started with using "lexicon".'''
     handle_init()
 
 @lexicon.command()
 def view():
+    '''Lists all the words learnt using "lexicon".'''
     handle_view()
 
     
 def handle_word(word):
-    #click.echo('Word received by new(): {}'.format(word))
     try:
         API_KEY = load_api_key()
         #print('API_KEY:', API_KEY)
