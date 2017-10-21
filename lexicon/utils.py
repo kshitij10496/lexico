@@ -20,23 +20,21 @@ def create_word_api(API_KEY):
 
 
 HOME_DIR = os.path.expanduser('~') # User's Home Directory
- # Base Directory to store all data related to Dictionary App
-BASE_DIR = os.path.join(HOME_DIR, '.dictionary')
+# Base Directory to store all data related to the application.
+BASE_DIR = os.path.join(HOME_DIR, '.lexicon')
 CONFIG_FILE = os.path.join(BASE_DIR, 'config.json')
 WORDS_FILE = os.path.join(BASE_DIR, 'words.json')
 DB_FILE = os.path.join(BASE_DIR, 'data.json')
 
 def save_api_key(api_key):
+    '''Saves or updates the Wordnik API key in the configuration file.'''
+
     is_initialized = check_initialization()
     if not is_initialized:
         os.mkdir(BASE_DIR)
 
     if not os.path.isfile(CONFIG_FILE):
         data = {'API_KEY': api_key}
-        encoded_data = json.dumps(data) # Encoding the data to JSON
-
-        with open(CONFIG_FILE, 'w') as file:
-            file.write(encoded_data) # Writing data to the Configuration file
     else:
         with open(CONFIG_FILE, 'r') as file:
             encoded_data = file.read()
@@ -44,16 +42,22 @@ def save_api_key(api_key):
         data = json.loads(encoded_data) # Decoding stored JSON to a Python dict
         # TODO: Prompt the user if an old API key exists
         data['API_KEY'] = api_key
-        encoded_data = json.dumps(data) # Encoding the data to JSON
 
-        # Write data to the Config file
-        with open(CONFIG_FILE, 'w') as file:
-            file.write(encoded_data) # Writing data to the Configuration file
+    encoded_data = json.dumps(data) # Encoding the data to JSON
+
+    # Write data to the Config file
+    with open(CONFIG_FILE, 'w') as file:
+        file.write(encoded_data) # Writing data to the Configuration file
 
     return True
 
 
 def load_api_key():
+    '''Return the Wordnik API key saved in the configuration file.
+
+    Raises ConfigFileError exception if the file does not exists.
+    '''
+
     if os.path.isfile(CONFIG_FILE):
         with open(CONFIG_FILE, 'r') as file:
             encoded_data = file.read()
@@ -141,9 +145,10 @@ def save_word(word_object):
     return True
 
 def get_words():
+    '''Fetches list of all the words the user has looked up.'''
 
     if not os.path.isfile(WORDS_FILE):
-        return 'No words added to your dictionary yet.'
+        return 'No words are currently present in your lexicon.'
     else:
         with open(WORDS_FILE, 'r') as file:
             encoded_data = file.read()
@@ -154,15 +159,14 @@ def get_words():
         return formatted_data
 
 def tabulate_words(formatted_data):
-        return tabulate(formatted_data, headers=['Word', 'Created'])
+    '''Tabulates the given words for user viewing.'''
+
+    return tabulate(formatted_data, headers=['Word', 'Created'])
 
 def check_initialization():
     '''Checks whether the application has been initilialized for the user or not.
 
-    Returns True if the application folder exists, else False.
-
+    Returns True if the application folder, along with the configuration file exists.
     '''
-    if os.path.exists(BASE_DIR):
-        return True
 
-    return False
+    return os.path.exists(BASE_DIR) and os.path.exists(CONFIG_FILE)
