@@ -12,35 +12,25 @@ register - Prompt user to provide Wordnik API key
 remove - Remove a word from the lookup table
 
 '''
+@click.group()
+def lexicon():
+    pass
 
-@click.command()
-@click.option('--init', is_flag=True, default=False)
-@click.option('--view', is_flag=True, default=False)
-@click.argument('word', required=False)
-def familiarize(init, view, word):
-    #print('View:', view)
-    #print('Word:', word)
-    if word is not None:
+@lexicon.command()
+@click.argument('word')
+def new(word):
+    if word:
         handle_word(word)
-    elif view:
-        handle_view()
-    elif init:
-        handle_init()
+    #TODO: raise error
 
-#@click.group(invoke_without_command=True)
-#@click.argument('word', type=str)
-#@click.pass_context
-#def dictionary(ctx, word):
-    #click.echo('We are now using "dictionary".')
-    #click.echo('Word passed: {}'.format(word))
-    #click.echo('Handling word')
-    #handle_word(word)
-    #click.echo('Handled word')
-#
-#@dictionary.command()
-#@click.argument('word', type=str)
-#def new(word):
-    #handle_word(word)
+@lexicon.command()
+def init():
+    handle_init()
+
+@lexicon.command()
+def view():
+    handle_view()
+
     
 def handle_word(word):
     #click.echo('Word received by new(): {}'.format(word))
@@ -48,7 +38,7 @@ def handle_word(word):
         API_KEY = load_api_key()
         #print('API_KEY:', API_KEY)
     except ConfigFileError:
-        click.echo('API key is missing. Kindly provide an API key by registering via:\n\n$ familiarize --init')
+        click.echo('API key is missing. Kindly provide an API key by registering via:\n\n$ lexicon init')
     else:
         word_object = fetch_word(word)
         click.echo_via_pager(word_object.stringify())
@@ -71,7 +61,7 @@ def handle_init():
 
     if is_initialized:
         click.echo('Your dictionary has already been initialised.\n' \
-                   'In order to learn how to use the application, use:\n\n$ familiarize --help')
+                   'In order to learn how to use the application, use:\n\n$ lexicon --help')
 
     else:
         # TODO: Move the instructions for registration to README and link them here.

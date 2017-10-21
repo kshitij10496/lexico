@@ -1,3 +1,6 @@
+arrow==0.10.0
 click==6.7
+python-dateutil==2.6.1
+six==1.11.0
 tabulate==0.7.7
 wordnik-py3==2.1.2
