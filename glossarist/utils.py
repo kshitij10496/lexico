@@ -21,7 +21,7 @@ def create_word_api(API_KEY):
 
 HOME_DIR = os.path.expanduser('~') # User's Home Directory
 # Base Directory to store all data related to the application.
-BASE_DIR = os.path.join(HOME_DIR, '.lexicon')
+BASE_DIR = os.path.join(HOME_DIR, '.glossarist')
 CONFIG_FILE = os.path.join(BASE_DIR, 'config.json')
 WORDS_FILE = os.path.join(BASE_DIR, 'words.json')
 DB_FILE = os.path.join(BASE_DIR, 'data.json')
@@ -148,7 +148,7 @@ def get_words():
     '''Fetches list of all the words the user has looked up.'''
 
     if not os.path.isfile(WORDS_FILE):
-        return 'No words are currently present in your lexicon.'
+        return 'No words are currently present in your glossarist.'
     else:
         with open(WORDS_FILE, 'r') as file:
             encoded_data = file.read()

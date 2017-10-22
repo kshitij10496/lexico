@@ -1,4 +1,4 @@
-# lexicon
+# glossarist
 
 Command Line Tool to help you expand your vocabulary and familiarize you with those elusive words.
 

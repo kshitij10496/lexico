@@ -6,22 +6,15 @@ import os
 
 from setuptools import setup, find_packages
 
-HERE = os.path.abspath(os.path.dirname(__file__))
-
-with codecs.open(os.path.join(HERE, 'README.md'), encoding='utf-8') as f:
-    description = f.readline()
-    long_description = f.read()
-
 if __name__ == '__main__':
     setup(
-        name = 'lexicon',
+        name = 'glossarist',
         version = '1.0.0',
-        description = description,
-        long_description = long_description,
+        description = 'Assistant to write your personalised glossary',
         license = 'MIT',
 
-        url = 'https://github.com/kshitij10496/lexicon',
-        download_url ='https://github.com/kshitij10496/lexicon/releases/tag/1.0',
+        url = 'https://github.com/kshitij10496/glossarist',
+        download_url ='https://github.com/kshitij10496/glossarist/releases/tag/v1.0.0',
 
         author = 'Kshitij Saraogi',
         author_email = 'kshitijsaraogi@gmail.com',
@@ -35,7 +28,7 @@ if __name__ == '__main__':
                     ],
         keywords='vocabulary command-line',
 
-        packages = ['lexicon'],
+        packages = ['glossarist'],
         include_package_data = True,
         install_requires = [
             'Click',
@@ -47,7 +40,7 @@ if __name__ == '__main__':
         ],
         entry_points = {
             'console_scripts': [
-                'lexicon=lexicon.cli:lexicon'
+                'glossarist=glossarist.cli:glossarist'
             ]
         }
     )

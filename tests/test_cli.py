@@ -1,20 +1,20 @@
 import click
 from click.testing import CliRunner
 
-from lexicon.cli import lexicon
+from glossarist.cli import glossarist
 
-def test_lexicon_group():
+def test_glossarist_group():
     runner = CliRunner()
-    result = runner.invoke(lexicon)
+    result = runner.invoke(glossarist)
     assert result.exit_code == 0
 
-def test_lexicon_group_help():
+def test_glossarist_group_help():
     runner = CliRunner()
-    result = runner.invoke(lexicon, '--help')
+    result = runner.invoke(glossarist, '--help')
     assert result.exit_code == 0
 
-    help_text_stubs = (lexicon.name, lexicon.help, 'Commands', 'Options')
+    help_text_stubs = (glossarist.name, glossarist.help, 'Commands', 'Options')
     assert all(help_text_stub in result.output for help_text_stub in help_text_stubs)
 
-    subcommands = lexicon.commands.keys()
+    subcommands = glossarist.commands.keys()
     assert all(subcommand in result.output for subcommand in subcommands)
