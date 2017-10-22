@@ -1,12 +1,7 @@
-# familiarize
+# lexicon
 
-CLI to help you expand your vocabulary and familiarize you with those elusive words.
+Command Line Tool to help you expand your vocabulary and familiarize you with those elusive words.
 
-
-**NOTE**: The project is under heavy development and the code has been tested manually.  
-So, I won't be surprised if things break unexpectedly. Do report them as issues.  
-The most common issue that you might face currently would be *connection timeouts*.  
-As an ad-hoc bypass for the problem, re-run the previous command.
 
 ## Installation
 
@@ -20,3 +15,7 @@ Since the package is not yet mature enough for distribution through PyPI, you wi
 
 **Step 04**: Install the package: `$ python3 setup.py install`
 
+**NOTE**: The project is under heavy development and the code has been tested manually.  
+So, I won't be surprised if things break unexpectedly. Do report them as issues.  
+The most common issue that you might face currently would be *connection timeouts*.  
+As an ad-hoc bypass for the problem, re-run the previous command.
