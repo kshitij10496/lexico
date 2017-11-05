@@ -2,6 +2,7 @@ from collections import namedtuple
 from dateutil.parser import parse
 import os
 import json
+import sqlite3
 
 import arrow
 from wordnik import *
@@ -21,10 +22,11 @@ def create_word_api(API_KEY):
 
 HOME_DIR = os.path.expanduser('~') # User's Home Directory
 # Base Directory to store all data related to the application.
-BASE_DIR = os.path.join(HOME_DIR, '.glossarist')
+BASE_DIR = os.path.join(HOME_DIR, '.lexico')
 CONFIG_FILE = os.path.join(BASE_DIR, 'config.json')
 WORDS_FILE = os.path.join(BASE_DIR, 'words.json')
-DB_FILE = os.path.join(BASE_DIR, 'data.json')
+DB_FILE = os.path.join(BASE_DIR, 'vocabulary.db')
+connection = sqlite3.connect(DB_FILE)
 
 def save_api_key(api_key):
     '''Saves or updates the Wordnik API key in the configuration file.'''
@@ -169,4 +171,57 @@ def check_initialization():
     Returns True if the application folder, along with the configuration file exists.
     '''
 
-    return os.path.exists(BASE_DIR) and os.path.exists(CONFIG_FILE)
+    return os.path.exists(BASE_DIR)
+
+def initialize_application():
+    os.mkdir(BASE_DIR)
+
+def has_api_key():
+    try:
+        _ = load_api_key()
+    except ConfigFileError:
+        return False
+    else:
+        return True
+
+def has_db():
+    # Check if the tables exist in the database with the required schemas.
+    return os.path.exists(DB_FILE)
+
+def initialize_db():
+    '''Initializes the user's vocabulary by creating necessary tables.
+
+    Returns False if the initialization fails else return True.
+    '''
+    with sqlite3.connect(DB_FILE) as connection:
+        with connection.cursor() as cursor:
+            # Step 1: Create Words Table
+            cursor.execute('''CREATE TABLE Words (
+                                            id                  INTEGER NOT NULL,
+                                            word                TEXT NOT NULL,
+                                            lookup              INTEGER,
+                                            created_at          TEXT,
+                                            last_lookup_at      TEXT,
+                                            num_meanings        INTEGER,
+                                            num_synonyms        INTEGER,
+                                            num_antonyms        INTEGER,
+                                            num_phrases         INTEGER,
+                                            num_examples        INTEGER,
+                                            num_pronunciations  INTEGER,
+                                            num_hyphenations    INTEGER,
+                                            PRIMARY KEY(id)
+                                        )''')
+            # Step 2: Create related tables
+            tables = ('Meanings', 'Synonyms', 'Antonyms', 'Examples', 'Phrases',
+                      'Pronunciations', 'Hyphenations')
+            create_table_query = '''CREATE TABLE (?) (
+                                                id      INTEGER NOT NULL,
+                                                text    TEXT,
+                                                word_id INTEGER NOT NULL,
+                                                PRIMARY KEY(id),
+                                                FOREIGN KEY(word_id) REFERENCES Word(id)
+                                            )'''
+            cursor.executemany(create_table_query, tables)
+    
+    return True
+    

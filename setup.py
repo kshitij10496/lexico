@@ -8,8 +8,8 @@ from setuptools import setup, find_packages
 
 if __name__ == '__main__':
     setup(
-        name = 'glossarist',
-        version = '1.0.0',
+        name = 'lexico',
+        version = '0.0.1',
         description = 'Assistant to write your personalised glossary',
         license = 'MIT',
 
@@ -28,7 +28,7 @@ if __name__ == '__main__':
                     ],
         keywords='vocabulary command-line',
 
-        packages = ['glossarist'],
+        packages = ['lexico'],
         include_package_data = True,
         install_requires = [
             'Click',
@@ -40,7 +40,7 @@ if __name__ == '__main__':
         ],
         entry_points = {
             'console_scripts': [
-                'glossarist=glossarist.cli:glossarist'
+                'lexico=lexico.cli:lexico'
             ]
         }
     )
