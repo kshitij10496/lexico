@@ -26,15 +26,99 @@ BASE_DIR = os.path.join(HOME_DIR, '.lexico')
 CONFIG_FILE = os.path.join(BASE_DIR, 'config.json')
 WORDS_FILE = os.path.join(BASE_DIR, 'words.json')
 DB_FILE = os.path.join(BASE_DIR, 'vocabulary.db')
-connection = sqlite3.connect(DB_FILE)
+
+###############################################################################
+############################ INITIALIZATION ###################################
+###############################################################################
+
+def check_initialization():
+    '''Checks whether the application has been initilialized for the user or not.
+
+    Returns True if the application folder exists.
+    '''
+    return os.path.exists(BASE_DIR)
+
+def initialize_application(check=True):
+    '''Creates a new application directory.
+
+    Parameters
+    ----------
+    check: boolean (default: True)
+        Check whether the application has been initilialized before.
+
+    NOTE: This function can be used to permanently clean the application directory.
+
+    '''
+    if check:
+        if check_initialization():
+            return
+
+    os.mkdir(BASE_DIR)
+
+def has_api_key():
+    '''Checks if the Wordnik API key has been provided by the user or not.'''
+    try:
+        _ = load_api_key()
+    except ConfigFileError:
+        return False
+    else:
+        return True
+
+def has_db():
+    '''Checks if the vocabulary database has been created or not.'''
+    # TODO: Check if the database has the desired schema.
+    return os.path.exists(DB_FILE)
+
+def initialize_db():
+    '''Initializes the user's vocabulary by creating the necessary table.
+
+    Returns False if the initialization fails else return True.
+    '''
+    with sqlite3.connect(DB_FILE) as connection:
+        cursor = connection.cursor()
+        # Step 1: Create Words Table
+        create_words_table = '''CREATE TABLE Words (
+                                        id                  INTEGER NOT NULL,
+                                        word                TEXT NOT NULL,
+                                        lookup              INTEGER,
+                                        created_at          TEXT,
+                                        last_lookup_at      TEXT,
+                                        num_meanings        INTEGER,
+                                        num_synonyms        INTEGER,
+                                        num_antonyms        INTEGER,
+                                        num_phrases         INTEGER,
+                                        num_examples        INTEGER,
+                                        num_pronunciations  INTEGER,
+                                        num_hyphenations    INTEGER,
+                                        PRIMARY KEY(id)
+                                    )'''
+        cursor.execute(create_words_table)
+
+        # Step 2: Create Vocabulary tables
+        # The "type" field of the table can have a value among:
+        #   - 'Meaning'
+        #   - 'Synonym'
+        #   - 'Antonym'
+        #   - 'Example'
+        #   - 'Phrase'
+        #   - 'Pronunciation'
+        #   - 'Hyphenation'
+
+        create_vocabulary_table = '''CREATE TABLE Vocabulary (
+                                            id INTEGER PRIMARY KEY,
+                                            type TEXT,
+                                            text TEXT,
+                                            word_id INTEGER NOT NULL,
+                                            FOREIGN KEY(word_id) REFERENCES Word(id)
+                                        )'''
+
+        cursor.execute(create_vocabulary_table)
+        connection.commit()
+
+    return True
 
 def save_api_key(api_key):
     '''Saves or updates the Wordnik API key in the configuration file.'''
-
-    is_initialized = check_initialization()
-    if not is_initialized:
-        os.mkdir(BASE_DIR)
-
     if not os.path.isfile(CONFIG_FILE):
         data = {'API_KEY': api_key}
     else:
@@ -165,63 +249,3 @@ def tabulate_words(formatted_data):
 
     return tabulate(formatted_data, headers=['Word', 'Created'])
 
-def check_initialization():
-    '''Checks whether the application has been initilialized for the user or not.
-
-    Returns True if the application folder, along with the configuration file exists.
-    '''
-
-    return os.path.exists(BASE_DIR)
-
-def initialize_application():
-    os.mkdir(BASE_DIR)
-
-def has_api_key():
-    try:
-        _ = load_api_key()
-    except ConfigFileError:
-        return False
-    else:
-        return True
-
-def has_db():
-    # Check if the tables exist in the database with the required schemas.
-    return os.path.exists(DB_FILE)
-
-def initialize_db():
-    '''Initializes the user's vocabulary by creating necessary tables.
-
-    Returns False if the initialization fails else return True.
-    '''
-    with sqlite3.connect(DB_FILE) as connection:
-        with connection.cursor() as cursor:
-            # Step 1: Create Words Table
-            cursor.execute('''CREATE TABLE Words (
-                                            id                  INTEGER NOT NULL,
-                                            word                TEXT NOT NULL,
-                                            lookup              INTEGER,
-                                            created_at          TEXT,
-                                            last_lookup_at      TEXT,
-                                            num_meanings        INTEGER,
-                                            num_synonyms        INTEGER,
-                                            num_antonyms        INTEGER,
-                                            num_phrases         INTEGER,
-                                            num_examples        INTEGER,
-                                            num_pronunciations  INTEGER,
-                                            num_hyphenations    INTEGER,
-                                            PRIMARY KEY(id)
-                                        )''')
-            # Step 2: Create related tables
-            tables = ('Meanings', 'Synonyms', 'Antonyms', 'Examples', 'Phrases',
-                      'Pronunciations', 'Hyphenations')
-            create_table_query = '''CREATE TABLE (?) (
-                                                id      INTEGER NOT NULL,
-                                                text    TEXT,
-                                                word_id INTEGER NOT NULL,
-                                                PRIMARY KEY(id),
-                                                FOREIGN KEY(word_id) REFERENCES Word(id)
-                                            )'''
-            cursor.executemany(create_table_query, tables)
-    
-    return True
-    

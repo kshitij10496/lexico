@@ -12,10 +12,13 @@ def lexico():
     pass
 
 @lexico.command()
-@click.option('--word', prompt='Your word', help='The word of interest.')
+@click.argument('word', required=False, default=None)
 def new(word):
     '''Finds the dictionary data about a word.'''
     #TODO: raise error
+    if word is None:
+        word = click.prompt('Enter the word', type=str)
+
     try:
         API_KEY = load_api_key()
     except ConfigFileError:
@@ -36,7 +39,7 @@ def new(word):
 def init():
     '''Helps you get started with using "lexico".
 
-    Save or update your Wordnik API Key.
+    Save your Wordnik API Key.
     '''
 
     # Step 01: Check if application folder exists.
@@ -47,12 +50,10 @@ def init():
     # Step 06: If not, then create necessary tables.
 
     is_initialized = check_initialization()
-    print('is_db_initialized', is_initialized)
     if not is_initialized:
         initialize_application()
 
     is_key_present = has_api_key()
-    print('is_key_present', is_key_present)
     if not is_key_present:
         # TODO: Move the instructions for registration to README and link them here.
         click.echo('In order to fetch information, this services requires you' \
@@ -63,15 +64,13 @@ def init():
         api_key = click.prompt('Enter your Wordnik API key').strip()
         save_status = save_api_key(api_key)
         if save_status:
-            click.echo('Your API Key: {} has been saved successfully'.format(api_key))
+            click.echo('Your API Key has been saved successfully\n')
         else:
             click.echo('There is some issue with saving your API key. Kindly retry.')
 
     is_db_initialized = has_db()
-    print('is_db_initialized', is_db_initialized)
     if not is_db_initialized:
         is_init = initialize_db()
-        print('is_db_initialized', is_init)
         if not is_init:
             click.echo('There is some issue with initializing your dictionary. Kindly retry.')
             sys.exit(1)
