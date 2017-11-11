@@ -1,4 +1,4 @@
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 from dateutil.parser import parse
 import os
 import json
@@ -145,6 +145,10 @@ def load_api_key():
     else:
         raise ConfigFileError('The configuration file does not exists.')
 
+###############################################################################
+#################################### FETCH ####################################
+###############################################################################
+
 def fetch_word(word):
     from .word import Word
 
@@ -152,16 +156,62 @@ def fetch_word(word):
         raise ConfigFileError()
     else:
         is_present = lookup_word(word)
-        if not is_present:
+        if is_present:
+            word_object = get_word(word)
+            update_meta(word)
+        else:
             # Make API call
             API_KEY = load_api_key()
             word_api = create_word_api(API_KEY)
             word_object = Word(word)
-
             # Store result in the Words and Vocabulary table
             save_word(word_object)
-            return word_object
 
+        return word_object
+
+def update_meta(word):
+    with sqlite3.connect(DB_FILE) as connection:
+        cursor = connection.cursor()
+        meta_query = '''SELECT lookup FROM Words WHERE word=(?)'''
+        update_statement = '''UPDATE Words SET lookup=(?), last_lookup_at=(?) WHERE word=(?)'''
+
+        cursor.execute(meta_query, [word])
+        lookup_count, *dummy = cursor.fetchone()
+
+        now = arrow.utcnow().isoformat()
+        cursor.execute(update_statement, [lookup_count+1, now, word])
+
+
+def get_word(word):
+    from .word import Word
+
+    with sqlite3.connect(DB_FILE) as connection:
+        cursor = connection.cursor()
+        data_query = '''SELECT type, text FROM Vocabulary JOIN Words
+           ON Words.id = Vocabulary.word_id
+           WHERE Words.word = (?)'''
+
+        word_data = defaultdict(list)
+        for data_type, data in cursor.execute(data_query, [word]):
+            if data_type == 'meaning':
+                word_data['_meanings'].append(data)
+            elif data_type == 'synonym':
+                word_data['_synonyms'].append(data)
+            elif data_type == 'antonym':
+                word_data['_antonyms'].append(data)
+            elif data_type == 'example':
+                word_data['_examples'].append(data)
+            elif data_type == 'phrase':
+                word_data['_phrases'].append(data)
+            elif data_type == 'text_pronunciation':
+                word_data['_text_pronunciations'].append(data)
+            elif data_type == 'hyphenation':
+                word_data['_hyphenation'] = data
+            else:
+                # Raise error
+                print(data_type, data)
+
+        return Word(word, **word_data)
 
 def lookup_word(word):
     with sqlite3.connect(DB_FILE) as connection:
@@ -186,6 +236,7 @@ def save_word(word_object):
         insert_word_data = '''INSERT INTO Vocabulary (type, text, word_id)
                               VALUES (?, ?, {})'''.format(word_id)
 
+        # TODO: Refactor this shit!
         for meaning in word_object.meanings:
             cursor.execute(insert_word_data, ['meaning', meaning])
     
