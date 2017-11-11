@@ -2,7 +2,7 @@ import sys
 import click
 
 from .errors import ConfigFileError
-from .utils import fetch_word, save_api_key, load_api_key, save_word, get_words, check_initialization, tabulate_words, initialize_db, initialize_application, has_api_key, has_db
+from .utils import fetch_word, save_api_key, load_api_key, save_word, get_words, check_initialization, tabulate_words, initialize_db, initialize_application, has_api_key, has_db, format_words
 
 
 @click.group()
@@ -13,26 +13,19 @@ def lexico():
 
 @lexico.command()
 @click.argument('word', required=False, default=None)
-def new(word):
+def add(word):
     '''Finds the dictionary data about a word.'''
     #TODO: raise error
     if word is None:
         word = click.prompt('Enter the word', type=str)
-
+        word = word.lower()
     try:
-        API_KEY = load_api_key()
-    except ConfigFileError:
-        click.echo('API key is missing. Kindly provide an API key by registering via:' \
-                   '\n\n$ lexico init\n')
-    else:
-        #TODO: separate logic based on whether the word has already been seen before or not.
         word_data = fetch_word(word)
+    except ConfigFileError:
+        click.echo('You need to initialize the application.')
+        click.echo('Run:\n\t\t $ lexico init')
+    else:
         click.echo_via_pager(word_data.stringify())
-        word_save_status = save_word(word_data)
-        if word_save_status:
-            click.echo('{} has been added to your personal vocabulary.'.format(word))
-        else:
-            click.echo('{} could not be added to your personal vocabulary'.format(word))
 
 
 @lexico.command()
@@ -85,5 +78,6 @@ def view():
     #TODO: Option for file output
     #TODO: More information/table columns
     words = get_words()
-    display_words = tabulate_words(words)
+    formatted_words = format_words(words)
+    display_words = tabulate_words(formatted_words)
     click.echo_via_pager(display_words)

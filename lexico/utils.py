@@ -12,8 +12,6 @@ from .errors import ConfigFileError
 
 API_URL = 'http://api.wordnik.com/v4'
 
-WordData = namedtuple('WordData', ['word', 'created_at'])
-
 def create_word_api(API_KEY):
     client = swagger.ApiClient(API_KEY, API_URL)
     wordApi = WordApi.WordApi(client)
@@ -83,13 +81,6 @@ def initialize_db():
                                         lookup              INTEGER,
                                         created_at          TEXT,
                                         last_lookup_at      TEXT,
-                                        num_meanings        INTEGER,
-                                        num_synonyms        INTEGER,
-                                        num_antonyms        INTEGER,
-                                        num_phrases         INTEGER,
-                                        num_examples        INTEGER,
-                                        num_pronunciations  INTEGER,
-                                        num_hyphenations    INTEGER,
                                         PRIMARY KEY(id)
                                     )'''
         cursor.execute(create_words_table)
@@ -157,95 +148,57 @@ def load_api_key():
 def fetch_word(word):
     from .word import Word
 
-    if os.path.isfile(WORDS_FILE):
-        with open(WORDS_FILE, 'r') as file:
-            encoded_data = file.read()
+    if not has_db():
+        raise ConfigFileError()
+    else:
+        is_present, word_object = lookup_word(word)
+        if not is_present:
+            # Make API call
+            API_KEY = load_api_key()
+            word_api = create_word_api(API_KEY)
+            word_object = Word(word)
 
-        data = json.loads(encoded_data)
+            # Store result in the Words and Vocabulary table
+            save_word(word_object)
             
-        for datapoint in data:
-            if word in datapoint:
-                word_data = lookup_word(word)
-                if word_data is not None:
-                    return Word(**word_data)
-                break
+        return word_object
 
-        
-    word_data = {'word': word}
-    return Word(**word_data)
 
 def lookup_word(word):
-    if not os.path.isfile(DB_FILE):
-        return None
-    else:
-        with open(DB_FILE, 'r') as file:
-            encoded_data = file.read()
 
-        data = json.loads(encoded_data)
+    with sqlite3.connect(DB_FILE) as connection:
+        cursor = connection.cursor()
+        search_word_query = '''SELECT * FROM Words WHERE word = (?)'''
+        vocab_query = '''SELECT * FROM Vocabulary JOIN Words
+                         ON Vocabulary.word_id = Words.id
+                         AND Words.word = (?)'''
+        
+        for result in cursor.execute(search_word_query, [word]):
+            word_db = WordDB(*result)
 
-        for d in data:
-            word_data = json.loads(d)
-            if word_data['word'] == word:
-                return word_data
 
+        
 
 def save_word(word_object):
-    # Save the word data to the database
-    encoded_data = [word_object.jsonify()]
-    if not os.path.isfile(DB_FILE):
-        with open(DB_FILE, 'w') as file:
-            file.write(json.dumps(encoded_data))
-    else:
-        with open(DB_FILE, 'r') as file:
-            data = file.read()
-
-        json_data = json.loads(data)
-        json_data.extend(encoded_data)
-
-        encoded_data = json.dumps(json_data)
-        with open(DB_FILE, 'w') as file:
-            file.write(encoded_data)
-
-    # Add word to lookup table
-    word = word_object.word
-    word_data = WordData(word, arrow.now().for_json())
-
-    if not os.path.isfile(WORDS_FILE):
-        data = [word_data]
-        encoded_data = json.dumps(data)
-
-        with open(WORDS_FILE, 'w') as file:
-            file.write(encoded_data)
-    else:
-        with open(WORDS_FILE, 'r') as file:
-            encoded_data = file.read()
-
-        data = json.loads(encoded_data)
-        data.append(word_data)
-        # TODO: Do not add word if it is already present in my vocabulary.
-        encoded_data = json.dumps(data)
-
-        with open(WORDS_FILE, 'w') as file:
-            file.write(encoded_data)
-
-    return True
-
+    pass
+    
 def get_words():
-    '''Fetches list of all the words the user has looked up.'''
+    search_word_query = '''SELECT word, lookup, created_at, last_lookup_at FROM Words'''
 
-    if not os.path.isfile(WORDS_FILE):
-        return 'No words are currently present in your glossarist.'
-    else:
-        with open(WORDS_FILE, 'r') as file:
-            encoded_data = file.read()
+    with sqlite3.connect(DB_FILE) as connection:
+        cursor = connection.cursor()
+        cursor.execute(search_word_query)
+        words = cursor.fetchall()
 
-        data = json.loads(encoded_data)
-        formatted_data = [(word_data[0], arrow.Arrow.fromdatetime(parse(word_data[1])).humanize()) for word_data in data]
+    return words
 
-        return formatted_data
+def format_words(words):
 
+    return [(word, lookup, arrow.get(created_at).humanize(), arrow.get(last_lookup_at).humanize())
+            for word, lookup, created_at, last_lookup_at in words]
+        
 def tabulate_words(formatted_data):
     '''Tabulates the given words for user viewing.'''
 
-    return tabulate(formatted_data, headers=['Word', 'Created'])
+    return tabulate(formatted_data, headers=['Word', 'Lookups', 'Created At', 'Last Lookup'])
 
