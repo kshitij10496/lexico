@@ -151,7 +151,7 @@ def fetch_word(word):
     if not has_db():
         raise ConfigFileError()
     else:
-        is_present, word_object = lookup_word(word)
+        is_present = lookup_word(word)
         if not is_present:
             # Make API call
             API_KEY = load_api_key()
@@ -160,28 +160,56 @@ def fetch_word(word):
 
             # Store result in the Words and Vocabulary table
             save_word(word_object)
-            
-        return word_object
+            return word_object
 
 
 def lookup_word(word):
-
     with sqlite3.connect(DB_FILE) as connection:
         cursor = connection.cursor()
-        search_word_query = '''SELECT * FROM Words WHERE word = (?)'''
-        vocab_query = '''SELECT * FROM Vocabulary JOIN Words
-                         ON Vocabulary.word_id = Words.id
-                         AND Words.word = (?)'''
-        
-        for result in cursor.execute(search_word_query, [word]):
-            word_db = WordDB(*result)
-
-
-        
+        search_word_query = '''SELECT COUNT(*) FROM Words WHERE word = (?)'''
+        cursor.execute(search_word_query, [word])
+        count, *dummy = cursor.fetchone()
+        return bool(count)
 
 def save_word(word_object):
-    pass
+    with sqlite3.connect(DB_FILE) as connection:
+        cursor = connection.cursor()
+
+        insert_word_meta = '''INSERT INTO Words (word, lookup, created_at, last_lookup_at)
+                              VALUES (?, ?, ?, ?)'''
+        now = arrow.utcnow().isoformat()
+        cursor.execute(insert_word_meta, [word_object.word, 1, now, now])
+
+        cursor.execute('SELECT id FROM Words WHERE word=(?)', [word_object.word])
+        word_id, *dummy = cursor.fetchone()
+
+        insert_word_data = '''INSERT INTO Vocabulary (type, text, word_id)
+                              VALUES (?, ?, {})'''.format(word_id)
+
+        for meaning in word_object.meanings:
+            cursor.execute(insert_word_data, ['meaning', meaning])
     
+        for synonym in word_object.synonyms:
+            cursor.execute(insert_word_data, ['synonym', synonym])
+
+        for antonym in word_object.antonyms:
+            cursor.execute(insert_word_data, ['antonym', antonym])
+
+        for example in word_object.examples:
+            cursor.execute(insert_word_data, ['example', example])
+
+        for text_pronunciation in word_object.text_pronunciations:
+            cursor.execute(insert_word_data, ['text_pronunciation', text_pronunciation])
+
+        for phrase in word_object.phrases:
+            cursor.execute(insert_word_data, ['phrase', phrase])
+
+        cursor.execute(insert_word_data, ['hyphenation', word_object.hyphenation])
+
+###############################################################################
+################################### DISPLAY ###################################
+###############################################################################
+
 def get_words():
     search_word_query = '''SELECT word, lookup, created_at, last_lookup_at FROM Words'''
 
@@ -193,12 +221,10 @@ def get_words():
     return words
 
 def format_words(words):
-
     return [(word, lookup, arrow.get(created_at).humanize(), arrow.get(last_lookup_at).humanize())
             for word, lookup, created_at, last_lookup_at in words]
         
 def tabulate_words(formatted_data):
     '''Tabulates the given words for user viewing.'''
-
-    return tabulate(formatted_data, headers=['Word', 'Lookups', 'Created At', 'Last Lookup'])
-
+    headers = ['Word', 'Lookups', 'Created At', 'Last Lookup']
+    return tabulate(formatted_data, headers=headers)

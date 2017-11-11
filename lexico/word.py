@@ -6,72 +6,72 @@ from wordnik import *
 from .utils import create_word_api, load_api_key
 
 class Word(object):
-    def __init__(self, **kwargs):
-        self.word = kwargs.get('word')
-        self._meanings = kwargs.get('_meanings')
-        self._examples = kwargs.get('_examples')
-        self._hyphenation = kwargs.get('_hyphenation')
-        self._audio = kwargs.get('_audio')
-        self._text_pronunciations = kwargs.get('_text_pronunciations')
-        self._phrases = kwargs.get('_phrases')
-        self._synonyms = kwargs.get('_synonyms')
-        self._antonyms = kwargs.get('_antonyms')
+    def __init__(self, word, **kwargs):
+        self.word = word
+        self._meanings = kwargs.get('_meanings', list())
+        self._examples = kwargs.get('_examples', list())
+        self._hyphenation = kwargs.get('_hyphenation', None)
+        self._audio = kwargs.get('_audio', list())
+        self._text_pronunciations = kwargs.get('_text_pronunciations', list())
+        self._phrases = kwargs.get('_phrases', list())
+        self._synonyms = kwargs.get('_synonyms', list())
+        self._antonyms = kwargs.get('_antonyms', list())
 
     def __repr__(self):
         return 'Word({})'.format(self.word)
 
     @property
     def meanings(self):
-        if self._meanings is None:
+        if not self._meanings:
             self._meanings = Word.get_meanings(self.word)
 
         return self._meanings
 
     @property
     def examples(self):
-        if self._examples is None:
+        if not self._examples:
             self._examples = Word.get_examples(self.word)
 
         return self._examples
 
     @property
     def hyphenation(self):
-        if self._hyphenation is None:
+        if not self._hyphenation:
             self._hyphenation = Word.get_hyphenation(self.word)
 
         return self._hyphenation
 
     @property
     def audio(self):
-        if self._audio is None:
+        if not self._audio:
             self._audio = Word.get_audio(self.word)
 
         return self._audio
 
     @property
     def text_pronunciations(self):
-        if self._text_pronunciations is None:
+        if not self._text_pronunciations:
             self._text_pronunciations = Word.get_text_pronunciations(self.word)
 
         return self._text_pronunciations
 
     @property
     def phrases(self):
-        if self._phrases is None:
+        if not self._phrases:
             self._phrases = Word.get_phrases(self.word)
 
         return self._phrases
 
     @property
     def synonyms(self):
-        if self._synonyms is None:
+        if not self._synonyms:
             self._synonyms = Word.get_synonyms(self.word)
 
         return self._synonyms
 
     @property
     def antonyms(self):
-        if self._antonyms is None:
+        if not self._antonyms:
             self._antonyms = Word.get_antonyms(self.word)
 
         return self._antonyms
@@ -110,7 +110,7 @@ class Word(object):
         if audio is not None:
             return audio[0].fileUrl
         else:
-            return None
+            return list()
 
     @staticmethod
     def get_text_pronunciations(word):
@@ -143,7 +143,7 @@ class Word(object):
                
             return synonym_words
 
-        return None
+        return list()
 
     @staticmethod
     def get_antonyms(word):
@@ -158,7 +158,7 @@ class Word(object):
 
             return antonym_words
 
-        return None
+        return list()
         
     def stringify(self):
 
@@ -174,30 +174,30 @@ class Word(object):
         
         hyphenation, audio, phrases, text_pronunciations = None, None, None, None
         
-        if self.hyphenation is not None:
+        if self.hyphenation:
             hyphenation = click.style(self.hyphenation, fg='green')
         
-        if self.audio is not None:
+        if self.audio:
             audio = click.style(self.audio, bg='black')
 
         # Representation for text pronunciations
-        if self.text_pronunciations is not None:
+        if self.text_pronunciations:
             text_pronunciations = list()
             for index, pronunciation in enumerate(self.text_pronunciations, start=1):
                 text_pronunciations.append(click.style('{}. {}'.format(index, pronunciation), fg='yellow'))
 
         # Representation for phrases
-        if self.phrases is not None:
+        if self.phrases:
             phrases = list()
             for index, phrase in enumerate(self.phrases, start=1):
                 phrases.append(click.style('{}. {}'.format(index, phrase), fg='magenta'))
         
         # Representation for synonyms
         synonyms, antonyms = None, None
-        if self.synonyms is not None:
+        if self.synonyms:
             synonyms = click.style(', '.join(self.synonyms), fg='green')
 
-        if self.antonyms is not None:
+        if self.antonyms:
             antonyms = click.style(', '.join(self.antonyms), fg='red')
 
         headings = [
