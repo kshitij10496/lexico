@@ -50,7 +50,7 @@ I built `lexico` as utility which will provide me with all the relevant informat
 
 ### Initialization and Setup
 
-**Step 01**: Grab your Wordnik API key from the Settings in your Wordnik Account. Log into your account [here](www.wordnik.com/login); create one if you do not already have one.
+**Step 01**: Grab your Wordnik API key from the Settings in your Wordnik Account. Log into your account [here](https://www.wordnik.com/login); create one if you do not already have one.
 
 **Step 02**: Initialize the vocabulary by running the command:  `$ lexico init`
 
