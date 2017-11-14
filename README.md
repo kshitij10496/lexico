@@ -6,7 +6,9 @@ The Command Line Tool to help expand your English vocabulary and familiarize you
 
 ## What is `lexico`?
 
-A fast and easily accessible tool for looking up English words.  
+A fast and easily accessible tool for looking up English words.
+
+![eleven](static/eleven.gif?raw=true)
 
 ### Motivation
 
@@ -44,12 +46,41 @@ I built `lexico` as utility which will provide me with all the relevant informat
 - [x] Audio
 - [x] Text Pronunciations
 
+## Usage
+
+### Initialization and Setup
+
+**Step 01**: Grab your Wordnik API key from the Settings in your Wordnik Account. Log into your account [here](www.wordnik.com/login); create one if you do not already have one.
+
+**Step 02**: Initialize the vocabulary by running the command:  `$ lexico init`
+
+**Step 03**: Provide the API key when prompted.
+
+You will get a success message if the vocabulary was setup with no issues.  
+However, if you face any issues, let me know [here](https://github.com/kshitij10496/lexico/issues).
+
+### Search a word
+
+Now that we have the application up and running, it's time to search for a word.  
+There are 2 ways to lookup a word for your convenience.
+            
+1. Run : `$ lexico add`.    
+   Enter the word when your are prompted to do so.
+
+2. Try: `$ lexico add <your_word>`
+
+### Viewing the vocabulary
+
+The command `$ lexico view` displays all the words in your vocabulary with associated metadata.
+
+
 ## Installation
 
 The latest version of the package is available on PyPI and can be installed via `pip` through:
 
 `$ python3 -m pip install lexico`
 
+ 
 ## Development Guide
 
 **Suggestion**: The use of a virtual environment is highly recommended.
