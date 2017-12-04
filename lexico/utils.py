@@ -163,9 +163,13 @@ def fetch_word(word):
             # Make API call
             API_KEY = load_api_key()
             word_api = create_word_api(API_KEY)
-            word_object = Word(word)
-            # Store result in the Words and Vocabulary table
-            save_word(word_object)
+            
+            is_present = lookup_word(word)
+            if is_present:
+                word_object = Word(word)
+                # Store result in the Words and Vocabulary table
+                save_word(word_object)
+            return None
 
         return word_object
 

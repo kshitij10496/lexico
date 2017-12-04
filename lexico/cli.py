@@ -27,10 +27,10 @@ def add(word):
     #else:   
     #    click.echo_via_pager(word_data.stringify())
     else:
-	try:
-	    click.echo_via_pager(word_data.stringify())
-        except TypeError:
+	if word_data is None:
             click.echo('Word doesn\'t exist. Please check the spelling.')
+        else:
+            click.echo_via_pager(word_data.stringify())
 
 @lexico.command()
 def init():
