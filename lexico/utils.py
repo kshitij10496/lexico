@@ -169,7 +169,7 @@ def fetch_word(word):
                 word_object = Word(word)
                 # Store result in the Words and Vocabulary table
                 save_word(word_object)
-            return None
+            else: return None
 
         return word_object
 
