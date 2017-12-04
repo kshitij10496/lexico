@@ -24,9 +24,13 @@ def add(word):
     except ConfigFileError:
         click.echo('You need to initialize the application.')
         click.echo('Run:\n\t\t $ lexico init')
+    #else:   
+    #    click.echo_via_pager(word_data.stringify())
     else:
-        click.echo_via_pager(word_data.stringify())
-
+	try:
+	    click.echo_via_pager(word_data.stringify())
+        except TypeError:
+            click.echo('Word doesn\'t exist. Please check the spelling.')
 
 @lexico.command()
 def init():
