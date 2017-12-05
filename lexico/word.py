@@ -82,7 +82,7 @@ class Word(object):
         WORD_API = create_word_api(API_KEY)
         definitions = WORD_API.getDefinitions(word, limit=5)
         
-        if defintions is None:
+        if definitions is None:
             return None
         
         data = [definition.text for definition in definitions]
