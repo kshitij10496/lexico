@@ -2,7 +2,21 @@ import sys
 import click
 
 from .errors import ConfigFileError
-from .utils import fetch_word, save_api_key, load_api_key, save_word, get_words, check_initialization, tabulate_words, initialize_db, initialize_application, has_api_key, has_db, format_words
+from .utils import fetch_word, save_api_key, load_api_key, save_word, get_words, check_initialization, tabulate_words, initialize_db, initialize_application, has_api_key, has_db, format_words,incorrect_key
+
+def get_api_key():
+    api_key=click.prompt('\nEnter your Wordnik API key').strip()
+    if(incorrect_key(api_key)):
+        click.secho('\nEntered API_KEY is incorret!',bg='white', fg='red')
+        cont=click.confirm('Would you like to re-enter your API key?',default=True)
+        if cont:
+            api_key=get_api_key()
+        else:
+            click.secho('\nInitialization process failed!',bg='white', fg='red')
+            click.secho('Visit http://www.wordnik.com and get your API_KEY.',bg='white', fg='red')
+            sys.exit(1)
+    return api_key
+        
 
 
 @click.group()
@@ -52,9 +66,11 @@ def init():
         click.echo('In order to fetch information, this services requires you' \
                ' to provide a Wordnik API key.\n' \
                'Visit http://www.wordnik.com/signup to SignUp.')
-
         # Step 01: Save the API Key
-        api_key = click.prompt('Enter your Wordnik API key').strip()
+        api_key = get_api_key()
+
+
+            
         save_status = save_api_key(api_key)
         if save_status:
             click.echo('Your API Key has been saved successfully\n')
