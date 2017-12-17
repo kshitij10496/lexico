@@ -3,7 +3,7 @@ import json
 import click
 from wordnik import *
 
-from .utils import create_word_api, load_api_key
+from .utils import create_word_api, load_api_key, fetch_translations
 
 class Word(object):
     def __init__(self, word, **kwargs):
@@ -16,6 +16,7 @@ class Word(object):
         self._phrases = kwargs.get('_phrases', list())
         self._synonyms = kwargs.get('_synonyms', list())
         self._antonyms = kwargs.get('_antonyms', list())
+        self._translations = kwargs.get('_translations', list())
 
     def __repr__(self):
         return 'Word({})'.format(self.word)
@@ -75,6 +76,12 @@ class Word(object):
             self._antonyms = Word.get_antonyms(self.word)
 
         return self._antonyms
+
+    @property
+    def translations(self):
+        if not self._translations:
+            self._translations = Word.get_translations(self.word)
+        return self._translations
 
     @staticmethod
     def get_meanings(word):
@@ -159,7 +166,14 @@ class Word(object):
             return antonym_words
 
         return list()
-        
+
+    @staticmethod
+    def get_translations(word):
+        translations = fetch_translations(word)
+        if translations is not None:
+            return translations
+        return list()
+
     def stringify(self):
 
         # Representation for meanings
@@ -200,6 +214,12 @@ class Word(object):
         if self.antonyms:
             antonyms = click.style(', '.join(self.antonyms), fg='red')
 
+        # Representation for translations   
+        if self.translations:
+            translations = list()
+            for index, translation in enumerate(self.translations, start=1):
+                translations.append(click.style('{}. {}'.format(index, translation)))
+
         headings = [
                     ('Word', click.style(self.word, fg='red', bold=True), '\t'),
                     ('Meanings', meanings, '\n'), 
@@ -209,7 +229,8 @@ class Word(object):
                     ('Text Pronunciations', text_pronunciations, '\n'),
                     ('Phrases', phrases, '\n'),
                     ('Hyphenation', hyphenation, ' '),
-                    ('Audio', audio, ' ')
+                    ('Audio', audio, ' '),
+                    ('Translations', translations, '\n')
                     ]
 
         s = [create_entry(heading, data, separator) for heading, data, separator in headings if data is not None]

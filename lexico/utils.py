@@ -7,6 +7,7 @@ import sqlite3
 import arrow
 from wordnik import *
 from tabulate import tabulate
+from googletrans import Translator
 
 from .errors import ConfigFileError
 
@@ -93,6 +94,7 @@ def initialize_db():
         #   - 'Example'
         #   - 'Phrase'
         #   - 'Pronunciation'
+        #   - 'Translation'
         #   - 'Hyphenation'
 
         create_vocabulary_table = '''CREATE TABLE Vocabulary (
@@ -205,6 +207,8 @@ def get_word(word):
                 word_data['_phrases'].append(data)
             elif data_type == 'text_pronunciation':
                 word_data['_text_pronunciations'].append(data)
+            elif data_type == 'translation':
+                word_data['_translations'].append(data)
             elif data_type == 'hyphenation':
                 word_data['_hyphenation'] = data
             else:
@@ -255,6 +259,9 @@ def save_word(word_object):
         for phrase in word_object.phrases:
             cursor.execute(insert_word_data, ['phrase', phrase])
 
+        for translation in word_object.translations:
+            cursor.execute(insert_word_data, ['translation', translation])
+
         cursor.execute(insert_word_data, ['hyphenation', word_object.hyphenation])
 
 ###############################################################################
@@ -279,3 +286,17 @@ def tabulate_words(formatted_data):
     '''Tabulates the given words for user viewing.'''
     headers = ['Word', 'Lookups', 'Created At', 'Last Lookup']
     return tabulate(formatted_data, headers=headers)
+
+###############################################################################
+################################## TRANSLATE ##################################
+###############################################################################
+
+def fetch_translations(word_to_translate):
+    languages_to_use = ["de","es","fr","hi","ru"]
+    translator = Translator()
+    word_translations = []
+    for language in languages_to_use:
+        word_in_this_language = translator.translate(word_to_translate, dest=language)
+        word_with_language_info = word_in_this_language.text + " (" + language + ")"
+        word_translations.append(word_with_language_info)
+    return word_translations

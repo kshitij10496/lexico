@@ -36,7 +36,8 @@ if __name__ == '__main__':
             'python-dateutil',
             'requests',
             'tabulate',
-            'wordnik-py3'
+            'wordnik-py3',
+            'googletrans'
         ],
         entry_points = {
             'console_scripts': [
