@@ -165,9 +165,12 @@ def fetch_word(word):
             # Make API call
             API_KEY = load_api_key()
             word_api = create_word_api(API_KEY)
+            
             word_object = Word(word)
             # Store result in the Words and Vocabulary table
-            save_word(word_object)
+            is_error = save_word(word_object)
+            if is_error is None:
+                return None
 
         return word_object
 
@@ -241,6 +244,9 @@ def save_word(word_object):
                               VALUES (?, ?, {})'''.format(word_id)
 
         # TODO: Refactor this shit!
+        if word_object.meanings is None:
+            return None
+ 
         for meaning in word_object.meanings:
             cursor.execute(insert_word_data, ['meaning', meaning])
     
@@ -263,6 +269,7 @@ def save_word(word_object):
             cursor.execute(insert_word_data, ['translation', translation])
 
         cursor.execute(insert_word_data, ['hyphenation', word_object.hyphenation])
+        return
 
 ###############################################################################
 ################################### DISPLAY ###################################
