@@ -300,3 +300,12 @@ def fetch_translations(word_to_translate):
         word_with_language_info = word_in_this_language.text + " (" + language + ")"
         word_translations.append(word_with_language_info)
     return word_translations
+
+###############################################################################
+################################## EXPORT #####################################
+###############################################################################
+
+def format_words_for_export(words):
+    return [(word, lookup, arrow.get(created_at).format('YYYY-MM-DD HH:mm:ss'), arrow.get(last_lookup_at).format('YYYY-MM-DD HH:mm:ss'))
+            for word, lookup, created_at, last_lookup_at in words]
+
