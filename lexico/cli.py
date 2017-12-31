@@ -94,5 +94,4 @@ def export():
         outputWriter.writerow(['','','',''])
         for word in formatted_words:
             outputWriter.writerow(list(word))
-        outputFile.close()
 
