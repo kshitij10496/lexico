@@ -85,14 +85,14 @@ def view():
 
 @lexico.command()
 def export():
-    '''Exports the current vovabulary into a CSV file.'''
+    '''Exports the current vocabulary into a CSV file.'''
     words = get_words()
     formatted_words = format_words_for_export(words)
-    outputFile = open('vocabulary.csv', 'w', newline='')
-    outputWriter = csv.writer(outputFile)
-    outputWriter.writerow(['WORD','LOOKUPS','CREATED AT','LAST LOOKUP'])
-    outputWriter.writerow(['','','',''])
-    for word in formatted_words:
-        outputWriter.writerow(list(word))
-    outputFile.close()
+    with open('vocabulary.csv', 'w', newline='') as outputFile:
+        outputWriter = csv.writer(outputFile)
+        outputWriter.writerow(['WORD','LOOKUPS','CREATED AT','LAST LOOKUP'])
+        outputWriter.writerow(['','','',''])
+        for word in formatted_words:
+            outputWriter.writerow(list(word))
+        outputFile.close()
 
