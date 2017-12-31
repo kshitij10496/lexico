@@ -175,7 +175,7 @@ class Word(object):
         return list()
 
     def stringify(self):
-
+        
         # Representation for meanings
         meanings = list()
         for index, meaning in enumerate(self.meanings, start=1):
@@ -219,7 +219,7 @@ class Word(object):
             translations = list()
             for index, translation in enumerate(self.translations, start=1):
                 translations.append(click.style('{}. {}'.format(index, translation)))
-
+        
         headings = [
                     ('Word', click.style(self.word, fg='red', bold=True), '\t'),
                     ('Meanings', meanings, '\n'), 
@@ -234,7 +234,7 @@ class Word(object):
                     ]
 
         s = [create_entry(heading, data, separator) for heading, data, separator in headings if data is not None]
-
+     
         return '\n\n'.join(s)
 
     def jsonify(self):

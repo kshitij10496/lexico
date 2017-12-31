@@ -1,5 +1,7 @@
 import sys
 import click
+from halo import Halo
+import subprocess
 
 from .errors import ConfigFileError
 from .utils import fetch_word, save_api_key, load_api_key, save_word, get_words, check_initialization, tabulate_words, initialize_db, initialize_application, has_api_key, has_db, format_words
@@ -19,13 +21,17 @@ def add(word):
     if word is None:
         word = click.prompt('Enter the word', type=str)
         word = word.lower()
+    spinner = Halo(text='LOADING', spinner='dot', color='yellow')
+    spinner.start()
     try:
         word_data = fetch_word(word)
     except ConfigFileError:
         click.echo('You need to initialize the application.')
         click.echo('Run:\n\t\t $ lexico init')
     else:
-        click.echo_via_pager(word_data.stringify())
+        word_string = word_data.stringify()
+        spinner.stop()
+        click.echo_via_pager(word_string)
 
 
 @lexico.command()
@@ -42,6 +48,8 @@ def init():
     # Step 05: Check if DB_FILE exists
     # Step 06: If not, then create necessary tables.
 
+    p = subprocess.Popen(["display", "static/logo.png"])
+    
     is_initialized = check_initialization()
     if not is_initialized:
         initialize_application()
@@ -68,6 +76,7 @@ def init():
             click.echo('There is some issue with initializing your dictionary. Kindly retry.')
             sys.exit(1)
 
+    p.kill()
     click.echo('Your personal dictionary has been initialised.\n' \
                'In order to learn how to use it, try:\n\n$ lexico --help\n')
 
@@ -77,7 +86,10 @@ def view():
     '''Lists all the words present in your dictionary.'''
     #TODO: Option for file output
     #TODO: More information/table columns
+    spinner = Halo(text='LOADING', spinner='dots3', color='red')
+    spinner.start()
     words = get_words()
     formatted_words = format_words(words)
     display_words = tabulate_words(formatted_words)
+    spinner.stop()
     click.echo_via_pager(display_words)
