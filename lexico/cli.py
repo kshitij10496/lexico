@@ -26,7 +26,10 @@ def add(word):
         click.echo('You need to initialize the application.')
         click.echo('Run:\n\t\t $ lexico init')
     else:
-        click.echo_via_pager(word_data.stringify())
+        if word_data is None:
+            click.secho('Word doesn\'t exist. Please check the spelling.', fg='red')
+        else:
+            click.echo_via_pager(word_data.stringify())
 
 
 @lexico.command()

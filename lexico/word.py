@@ -17,7 +17,7 @@ class Word(object):
         self._synonyms = kwargs.get('_synonyms', list())
         self._antonyms = kwargs.get('_antonyms', list())
         self._translations = kwargs.get('_translations', list())
-
+            
     def __repr__(self):
         return 'Word({})'.format(self.word)
 
@@ -88,7 +88,10 @@ class Word(object):
         API_KEY = load_api_key()
         WORD_API = create_word_api(API_KEY)
         definitions = WORD_API.getDefinitions(word, limit=5)
-        data = [definition.text for definition in definitions]
+        try:
+            data = [definition.text for definition in definitions]
+        except TypeError:
+            return list()
         return data
 
     @staticmethod
@@ -96,16 +99,22 @@ class Word(object):
         API_KEY = load_api_key()
         WORD_API = create_word_api(API_KEY)
         examples = WORD_API.getExamples(word, limit=3)
-        return [example.text for example in examples.examples]
+        try:
+            data = [example.text for example in examples.examples]
+        except (TypeError,AttributeError):
+            return list() 
+        return data
 
     @staticmethod
     def get_hyphenation(word):
         API_KEY = load_api_key()
         WORD_API = create_word_api(API_KEY)
         hyphenation = WORD_API.getHyphenation(word)
-        if hyphenation is not None:
-            return '-'.join(syllable.text for syllable in hyphenation)
-
+        try:
+            if hyphenation is not None:
+                return '-'.join(syllable.text for syllable in hyphenation)
+        except TypeError:
+            return list() 
         return hyphenation
 
     @staticmethod
@@ -114,9 +123,12 @@ class Word(object):
         WORD_API = create_word_api(API_KEY)
         audio = WORD_API.getAudio(word, limit=1)
         # TODO: Provide flexibility in setting limit
-        if audio is not None:
-            return audio[0].fileUrl
-        else:
+        try:
+            if audio is not None:
+                return audio[0].fileUrl
+            else:
+                return list()
+        except TypeError:
             return list()
 
     @staticmethod
@@ -124,32 +136,41 @@ class Word(object):
         API_KEY = load_api_key()
         WORD_API = create_word_api(API_KEY)
         pronunciations = WORD_API.getTextPronunciations(word)
-        return [pronunciation.raw for pronunciation in pronunciations
+        try:
+            data = [pronunciation.raw for pronunciation in pronunciations
                                   if pronunciation.rawType != 'arpabet']
+        except TypeError:
+            return list() 
+        return data
 
     @staticmethod
     def get_phrases(word):
         API_KEY = load_api_key()
         WORD_API = create_word_api(API_KEY)
         phrases = WORD_API.getPhrases(word)
-        if phrases is not None:
-            return ['{} {}'.format(phrase.gram1, phrase.gram2) for phrase in phrases]
-        else:
-            return phrases
+        try:
+            if phrases is not None:
+               return ['{} {}'.format(phrase.gram1, phrase.gram2) for phrase in phrases]
+            else:
+                return phrases
+        except TypeError:
+            return list()
 
     @staticmethod
     def get_synonyms(word):
         API_KEY = load_api_key()
         WORD_API = create_word_api(API_KEY)
         synonyms = WORD_API.getRelatedWords(word, relationshipTypes='synonym')
-        if synonyms is not None:
-            synonym_words = []
-            for synonym in synonyms:
-                if synonym.relationshipType == 'synonym':
-                    synonym_words.extend(synonym.words)
+        try:
+            if synonyms is not None:
+                synonym_words = []
+                for synonym in synonyms:
+                    if synonym.relationshipType == 'synonym':
+                        synonym_words.extend(synonym.words)
                
-            return synonym_words
-
+                return synonym_words
+        except TypeError:
+            return list()
         return list()
 
     @staticmethod
@@ -157,14 +178,16 @@ class Word(object):
         API_KEY = load_api_key()
         WORD_API = create_word_api(API_KEY)
         antonyms = WORD_API.getRelatedWords(word, relationshipTypes='antonym')
-        if antonyms is not None:
-            antonym_words = []
-            for antonym in antonyms:
-                if antonym.relationshipType == 'antonym':
-                    antonym_words.extend(antonym.words)
+        try:
+            if antonyms is not None:
+                antonym_words = []
+                for antonym in antonyms:
+                    if antonym.relationshipType == 'antonym':
+                        antonym_words.extend(antonym.words)
 
-            return antonym_words
-
+                return antonym_words
+        except TypeError:
+            return list()
         return list()
 
     @staticmethod
